@@ -38,8 +38,15 @@ npm install --silent
 
 # Create Windows service
 $serviceName = "DadsCloud OS"
-sc.exe create $serviceName binPath= "node `"$InstallPath\src\server\app.js`"" start= auto | Out-Null
-Start-Service $serviceName
+$servicePath = "node.exe `"$InstallPath\src\server\app.js`""
+sc.exe create $serviceName binPath= $servicePath start= auto
+if ($LASTEXITCODE -eq 0) {
+    Start-Service $serviceName
+    Write-Host "Service started successfully" -ForegroundColor Green
+} else {
+    Write-Host "Service creation failed, starting manually..." -ForegroundColor Yellow
+    Start-Process -WindowStyle Hidden -FilePath "node" -ArgumentList "`"$InstallPath\src\server\app.js`""
+}
 
 # Clean up
 Remove-Item $zipFile, "$env:TEMP\dadscloud-extract" -Recurse -Force -ErrorAction SilentlyContinue
