@@ -1,0 +1,43 @@
+{
+  "name": "dadscloud-os",
+  "version": "1.0.0",
+  "description": "Open-source personal cloud operating system for Windows and Linux",
+  "main": "src/server/app.js",
+  "scripts": {
+    "start": "node src/server/app.js",
+    "dev": "nodemon src/server/app.js",
+    "install-service": "node scripts/install/windows-service.js",
+    "uninstall-service": "node scripts/uninstall/windows-service.js",
+    "build": "node scripts/build.js"
+  },
+  "keywords": [
+    "personal-cloud",
+    "self-hosted",
+    "home-server",
+    "open-source",
+    "dadscloud"
+  ],
+  "author": "DadsCloud OS Team",
+  "license": "MIT",
+  "dependencies": {
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "helmet": "^7.0.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/dadscloud-os.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/dadscloud-os/issues"
+  },
+  "homepage": "https://dadscloud.com"
+}

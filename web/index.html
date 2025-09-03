@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DadsCloud OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .app-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .glow {
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .notification {
+            z-index: 9999;
+        }
+
+        .modal {
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Header -->
+    <header class="glass-effect p-4 mb-8">
+        <div class="container mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-cloud text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold">DadsCloud OS</h1>
+                    <p class="text-sm opacity-75">localhost:1468</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <p class="text-sm opacity-75">System Status</p>
+                    <p class="system-status text-green-400 font-semibold"><i class="fas fa-circle text-xs"></i> Online</p>
+                </div>
+                <button class="glass-effect px-4 py-2 rounded-lg hover:bg-white/20 transition-colors">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4">
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 fade-in">
+            <!-- CPU Stats -->
+            <div class="glass-effect p-6 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-75">CPU Usage</p>
+                        <p class="text-2xl font-bold cpu-percentage">23%</p>
+                    </div>
+                    <i class="fas fa-microchip text-3xl opacity-50"></i>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2 mt-3">
+                    <div class="bg-blue-500 h-2 rounded-full cpu-bar" style="width: 23%"></div>
+                </div>
+            </div>
+            
+            <!-- Memory Stats -->
+            <div class="glass-effect p-6 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-75">Memory</p>
+                        <p class="text-2xl font-bold memory-used">4.2GB</p>
+                    </div>
+                    <i class="fas fa-memory text-3xl opacity-50"></i>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2 mt-3">
+                    <div class="bg-green-500 h-2 rounded-full memory-bar" style="width: 65%"></div>
+                </div>
+            </div>
+            
+            <!-- Storage Stats -->
+            <div class="glass-effect p-6 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-75">Storage</p>
+                        <p class="text-2xl font-bold storage-used">156GB</p>
+                    </div>
+                    <i class="fas fa-hdd text-3xl opacity-50"></i>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2 mt-3">
+                    <div class="bg-yellow-500 h-2 rounded-full storage-bar" style="width: 45%"></div>
+                </div>
+            </div>
+            
+            <!-- Apps Running -->
+            <div class="glass-effect p-6 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-75">Apps Running</p>
+                        <p class="text-2xl font-bold running-apps-count">7</p>
+                    </div>
+                    <i class="fas fa-cube text-3xl opacity-50"></i>
+                </div>
+                <div class="flex space-x-1 mt-3">
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mb-8 fade-in">
+            <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
+            <div class="flex space-x-4 flex-wrap">
+                <button class="glass-effect px-6 py-3 rounded-lg hover:bg-white/20 transition-all glow install-app-btn mb-2">
+                    <i class="fas fa-plus mr-2"></i>Install App
+                </button>
+                <button class="glass-effect px-6 py-3 rounded-lg hover:bg-white/20 transition-all mb-2">
+                    <i class="fas fa-folder mr-2"></i>File Manager
+                </button>
+                <button class="glass-effect px-6 py-3 rounded-lg hover:bg-white/20 transition-all mb-2">
+                    <i class="fas fa-terminal mr-2"></i>System Logs
+                </button>
+                <button class="glass-effect px-6 py-3 rounded-lg hover:bg-white/20 transition-all mb-2">
+                    <i class="fas fa-download mr-2"></i>Backup
+                </button>
+            </div>
+        </div>
+
+        <!-- Installed Apps -->
+        <div class="fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold">Installed Applications</h2>
+                <button class="glass-effect px-4 py-2 rounded-lg hover:bg-white/20 transition-colors text-sm">
+                    <i class="fas fa-th-large mr-2"></i>View All
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 installed-apps-grid">
+                <!-- Apps will be dynamically populated here -->
+                
+                <!-- Add New App Card -->
+                <div class="app-card glass-effect p-6 rounded-xl border-2 border-dashed border-white/30 flex flex-col items-center justify-center text-center min-h-[200px] add-new-app-card">
+                    <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-plus text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-lg mb-2">Install New App</h3>
+                    <p class="text-sm opacity-75 mb-4">Browse the app store</p>
+                    <button class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-4 py-2 rounded-lg text-sm transition-all browse-apps-btn">
+                        Browse Apps
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-16 mb-8 text-center">
+            <div class="glass-effect p-4 rounded-xl">
+                <p class="text-sm opacity-75">
+                    DadsCloud OS v1.0.0 • Open Source • Made with ❤️
+                </p>
+                <p class="text-xs opacity-50 mt-2 system-uptime">
+                    Running on localhost:1468 • System uptime: Loading...
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // DadsCloud API Class
+        class DadsCloudAPI {
+            constructor(baseUrl = '') {
+                this.baseUrl = baseUrl;
+            }
+
+            async fetch(endpoint, options = {}) {
+                const response = await fetch(`${this.baseUrl}/api${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            }
+
+            async getSystemStatus() {
+                return await this.fetch('/status');
+            }
+
+            async getAppCatalog() {
+                return await this.fetch('/apps/catalog');
+            }
+
+            async getInstalledApps() {
+                return await this.fetch('/apps/installed');
+            }
+
+            async installApp(appId) {
+                return await this.fetch('/apps/install', {
+                    method: 'POST',
+                    body: JSON.stringify({ appId })
+                });
+            }
+
+            async uninstallApp(appId) {
+                return await this.fetch(`/apps/${appId}`, {
+                    method: 'DELETE'
+                });
+            }
+
+            async controlApp(appId, action) {
+                return await this.fetch(`/apps/${appId}/control`, {
+                    method: 'POST',
+                    body: JSON.stringify({ action })
+                });
+            }
+        }
+
+        // DadsCloud UI Class
+        class DadsCloudUI {
+            constructor() {
+                this.api = new DadsCloudAPI();
+                this.ws = null;
+                this.init();
+            }
+
+            async init() {
+                await this.loadSystemStats();
+                await this.loadInstalledApps();
+                this.setupEventListeners();
+                this.setupWebSocket();
+                
+                // Refresh data every 30 seconds
+                setInterval(() => {
+                    this.loadSystemStats();
+                    this.loadInstalledApps();
+                }, 30000);
+            }
+
+            async loadSystemStats() {
+                try {
+                    const status = await this.api.getSystemStatus();
+                    this.updateStatsDisplay(status.stats);
+                    this.updateSystemInfo(status);
+                } catch (error) {
+                    console.error('Error loading system stats:', error);
+                    this.showError('Failed to load system statistics');
+                }
+            }
+
+            updateStatsDisplay(stats) {
+                // Update CPU
+                const cpuPercentage = document.querySelector('.cpu-percentage');
+                const cpuBar = document.querySelector('.cpu-bar');
+                if (cpuPercentage && cpuBar) {
+                    cpuPercentage.textContent = `${stats.cpu}%`;
+                    cpuBar.style.width = `${stats.cpu}%`;
+                }
+
+                // Update Memory
+                const memoryUsed = document.querySelector('.memory-used');
+                const memoryBar = document.querySelector('.memory-bar');
+                if (memoryUsed && memoryBar) {
+                    memoryUsed.textContent = `${stats.memory.used}GB`;
+                    memoryBar.style.width = `${stats.memory.percentage}%`;
+                }
+
+                // Update Storage
+                const storageUsed = document.querySelector('.storage-used');
+                const storageBar = document.querySelector('.storage-bar');
+                if (storageUsed && storageBar) {
+                    storageUsed.textContent = `${stats.disk.used}GB`;
+                    storageBar.style.width = `${stats.disk.percentage}%`;
+                }
+            }
+
+            updateSystemInfo(status) {
+                const runningAppsCount = document.querySelector('.running-apps-count');
+                if (runningAppsCount) {
+                    runningAppsCount.textContent = status.apps.running;
+                }
+
+                const systemStatus = document.querySelector('.system-status');
+                if (systemStatus) {
+                    systemStatus.innerHTML = '<i class="fas fa-circle text-xs"></i> Online';
+                    systemStatus.className = 'text-green-400 font-semibold system-status';
+                }
+
+                const uptime = document.querySelector('.system-uptime');
+                if (uptime && status.uptime) {
+                    const uptimeHours = Math.floor(status.uptime / 3600);
+                    const uptimeMinutes = Math.floor((status.uptime % 3600) / 60);
+                    uptime.textContent = `Running on localhost:1468 • System uptime: ${uptimeHours}h ${uptimeMinutes}m`;
+                }
+            }
+
+            async loadInstalledApps() {
+                try {
+                    const installedApps = await this.api.getInstalledApps();
+                    this.renderInstalledApps(installedApps);
+                } catch (error) {
+                    console.error('Error loading installed apps:', error);
+                }
+            }
+
+            renderInstalledApps(apps) {
+                const container = document.querySelector('.installed-apps-grid');
+                if (!container) return;
+
+                // Keep the "Add New App" card
+                const addNewCard = container.querySelector('.add-new-app-card');
+                
+                // Clear existing apps
+                const existingApps = container.querySelectorAll('.app-card:not(.add-new-app-card)');
+                existingApps.forEach(app => app.remove());
+
+                // Render installed apps
+                apps.forEach(app => {
+                    const appCard = this.createAppCard(app);
+                    container.insertBefore(appCard, addNewCard);
+                });
+            }
+
+            createAppCard(app) {
+                const card = document.createElement('div');
+                card.className = 'app-card glass-effect p-6 rounded-xl';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-r ${app.color} rounded-lg flex items-center justify-center">
+                            <i class="${app.icon} text-xl"></i>
+                        </div>
+                        <div class="w-3 h-3 ${app.status === 'running' ? 'bg-green-500' : 'bg-red-500'} rounded-full"></div>
+                    </div>
+                    <h3 class="font-semibold text-lg mb-2">${app.name}</h3>
+                    <p class="text-sm opacity-75 mb-4">${app.description}</p>
+                    <div class="flex space-x-2">
+                        <button onclick="dadsCloud.openApp('${app.id}')" 
+                                class="flex-1 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-sm transition-colors">
+                            Open
+                        </button>
+                        <button onclick="dadsCloud.showAppMenu('${app.id}')" 
+                                class="px-3 py-2 rounded-lg text-sm hover:bg-white/20 transition-colors">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                `;
+                return card;
+            }
+
+            async showAppStore() {
+                try {
+                    const catalog = await this.api.getAppCatalog();
+                    this.renderAppStore(catalog);
+                } catch (error) {
+                    console.error('Error loading app catalog:', error);
+                    this.showError('Failed to load app store');
+                }
+            }
+
+            renderAppStore(catalog) {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center modal';
+                modal.innerHTML = `
+                    <div class="glass-effect p-8 rounded-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold">App Store</h2>
+                            <button onclick="this.closest('.fixed').remove()" 
+                                    class="text-white/60 hover:text-white text-2xl">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${Object.entries(catalog).map(([id, app]) => `
+                                <div class="glass-effect p-6 rounded-xl">
+                                    <div class="w-12 h-12 bg-gradient-to-r ${app.color} rounded-lg flex items-center justify-center mb-4">
+                                        <i class="${app.icon} text-xl"></i>
+                                    </div>
+                                    <h3 class="font-semibold text-lg mb-2">${app.name}</h3>
+                                    <p class="text-sm opacity-75 mb-4">${app.description}</p>
+                                    <button onclick="dadsCloud.installApp('${id}')" 
+                                            class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition-colors">
+                                        Install
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            async installApp(appId) {
+                try {
+                    const result = await this.api.installApp(appId);
+                    this.showSuccess(`Installing ${appId}...`);
+                    
+                    // Close any open modals
+                    document.querySelectorAll('.modal').forEach(modal => modal.remove());
+                    
+                    // Refresh apps after installation
+                    setTimeout(() => {
+                        this.loadInstalledApps();
+                    }, 3000);
+                } catch (error) {
+                    console.error('Error installing app:', error);
+                    this.showError('Failed to install app');
+                }
+            }
+
+            async openApp(appId) {
+                try {
+                    const installedApps = await this.api.getInstalledApps();
+                    const app = installedApps.find(a => a.id === appId);
+                    
+                    if (app && app.url) {
+                        window.open(app.url, '_blank');
+                    } else {
+                        this.showError('App URL not available');
+                    }
+                } catch (error) {
+                    this.showError('Failed to open app');
+                }
+            }
+
+            showAppMenu(appId) {
+                const menu = document.createElement('div');
+                menu.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center modal';
+                menu.innerHTML = `
+                    <div class="glass-effect p-6 rounded-xl">
+                        <h3 class="text-lg font-semibold mb-4">App Controls</h3>
+                        <div class="space-y-2">
+                            <button onclick="dadsCloud.controlApp('${appId}', 'start')" 
+                                    class="block w-full text-left px-4 py-2 rounded hover:bg-white/20">
+                                <i class="fas fa-play mr-2"></i>Start
+                            </button>
+                            <button onclick="dadsCloud.controlApp('${appId}', 'stop')" 
+                                    class="block w-full text-left px-4 py-2 rounded hover:bg-white/20">
+                                <i class="fas fa-stop mr-2"></i>Stop
+                            </button>
+                            <button onclick="dadsCloud.uninstallApp('${appId}')" 
+                                    class="block w-full text-left px-4 py-2 rounded hover:bg-red-600/50 text-red-400">
+                                <i class="fas fa-trash mr-2"></i>Uninstall
+                            </button>
+                            <button onclick="this.closest('.fixed').remove()" 
+                                    class="block w-full text-left px-4 py-2 rounded hover:bg-white/20 mt-4 border-t border-white/20 pt-4">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(menu);
+            }
+
+            async controlApp(appId, action) {
+                try {
+                    await this.api.controlApp(appId, action);
+                    this.showSuccess(`App ${action} successful`);
+                    this.loadInstalledApps();
+                } catch (error) {
+                    console.error('Error controlling app:', error);
+                    this.showError(`Failed to ${action} app`);
+                }
+                
+                // Close any open menus
+                document.querySelectorAll('.modal').forEach(modal => modal.remove());
+            }
+
+            async uninstallApp(appId) {
+                if (confirm('Are you sure you want to uninstall this app?')) {
+                    try {
+                        await this.api.uninstallApp(appId);
+                        this.showSuccess('App uninstalled successfully');
+                        this.loadInstalledApps();
+                    } catch (error) {
+                        console.error('Error uninstalling app:', error);
+                        this.showError('Failed to uninstall app');
+                    }
+                }
+                
+                // Close any open menus
+                document.querySelectorAll('.modal').forEach(modal => modal.remove());
+            }
+
+            setupEventListeners() {
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('.install-app-btn') || e.target.closest('.browse-apps-btn')) {
+                        this.showAppStore();
+                    }
+                });
+            }
+
+            setupWebSocket() {
+                try {
+                    this.ws = new WebSocket('ws://localhost:1469');
+                    
+                    this.ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'stats') {
+                            this.updateStatsDisplay(data.data);
+                        }
+                    };
+                    
+                    this.ws.onclose = () => {
+                        console.log('WebSocket disconnected, attempting to reconnect...');
+                        setTimeout(() => this.setupWebSocket(), 5000);
+                    };
+                } catch (error) {
+                    console.log('WebSocket not available, using polling instead');
+                }
+            }
+
+            showSuccess(message) {
+                this.showNotification(message, 'success');
+            }
+
+            showError(message) {
+                this.showNotification(message, 'error');
+            }
+
+            showNotification(message, type) {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 p-4 rounded-lg glass-effect notification ${
+                    type === 'error' ? 'border-red-500' : 'border-green-500'
+                } border`;
+                notification.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'} mr-2"></i>
+                        ${message}
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 3000);
+            }
+        }
+
+        // Initialize DadsCloud UI when page loads
+        let dadsCloud;
+        document.addEventListener('DOMContentLoaded', function() {
+            dadsCloud = new DadsCloudUI();
+            
+            // Add animation delays for fade-in elements
+            const stats = document.querySelectorAll('.fade-in');
+            stats.forEach((stat, index) => {
+                stat.style.animationDelay = (index * 0.1) + 's';
+            });
+        });
+
+        // Global functions for inline onclick handlers
+        window.dadsCloud = {
+            installApp: (appId) => dadsCloud.installApp(appId),
+            openApp: (appId) => dadsCloud.openApp(appId),
+            showAppMenu: (appId) => dadsCloud.showAppMenu(appId),
+            controlApp: (appId, action) => dadsCloud.controlApp(appId, action),
+            uninstallApp: (appId) => dadsCloud.uninstallApp(appId)
+        };
+    </script>
+</body>
+</html>

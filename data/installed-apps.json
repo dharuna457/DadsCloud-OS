@@ -1,0 +1,14 @@
+[
+  {
+    "id": "file-manager",
+    "name": "Cloud Storage",
+    "description": "Personal file storage and sync",
+    "icon": "fas fa-folder",
+    "color": "from-blue-500 to-cyan-500",
+    "port": 8080,
+    "serviceName": "Nextcloud",
+    "status": "stopped",
+    "installedAt": "2025-09-03T13:50:27.205Z",
+    "url": "http://localhost:8080"
+  }
+]
