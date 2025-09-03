@@ -1,412 +1,144 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const os = require('os');
-const fs = require('fs').promises;
-const { exec } = require('child_process');
-const { promisify } = require('util');
-const crypto = require('crypto');
+const helmet = require('helmet');
+const cors = require('cors');
+const compression = require('compression');
+const multer = require('multer');
+const bcrypt = require('bcryptjs');
+const si = require('systeminformation');
+const fs = require('fs');
+const WebSocket = require('ws');
 
 const app = express();
-const PORT = 1468;
-const execAsync = promisify(exec);
-const multer = require('multer');
-
-// Middleware
+app.use(helmet());
+app.use(compression());
+app.use(cors({ origin: '*' }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../../web')));
+app.use(express.urlencoded({ extended: true }));
 
-// CORS for development
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    next();
-});
+// ==== Configurable ports ====
+const PORT = parseInt(process.env.PORT || '1468', 10);
+const WS_PORT = parseInt(process.env.WS_PORT || '1469', 10);
 
-// In-memory user storage (in production, use database)
-const users = {
-    admin: {
-        username: 'admin',
-        password: 'admin123', // In production, hash this
-        createdAt: new Date().toISOString()
-    }
-};
+// ==== Users from config/users.json (bcrypt-hashed) ====
+const USERS_FILE = path.join(__dirname, '..', '..', '..', 'config', 'users.json');
+let users = [];
+try {
+  users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'));
+} catch {
+  users = [];
+}
+if (users.length === 0) {
+  const defaultHash = bcrypt.hashSync('admin123', 10);
+  users = [{ username: 'admin', passwordHash: defaultHash, role: 'admin' }];
+  fs.mkdirSync(path.dirname(USERS_FILE), { recursive: true });
+  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  console.warn('⚠️ Created default user admin/admin123 — change this password ASAP!');
+}
 
-// Session storage
+// ==== Auth/session ====
 const sessions = new Map();
 
-// Generate session token
-function generateToken() {
-    return crypto.randomBytes(32).toString('hex');
-}
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body || {};
+  let user = users.find(u => u.username === username);
+  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-// Authentication middleware
-function requireAuth(req, res, next) {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Authentication required' });
-    }
-    
-    const token = authHeader.split(' ')[1];
-    const session = sessions.get(token);
-    
-    if (!session || Date.now() > session.expiresAt) {
-        sessions.delete(token);
-        return res.status(401).json({ error: 'Invalid or expired token' });
-    }
-    
-    req.user = session.user;
-    next();
-}
+  const ok = user.passwordHash
+    ? bcrypt.compareSync(password, user.passwordHash)
+    : user.password === password;
 
-// Real Windows system stats function
-async function getRealSystemStats() {
-    try {
-        // Get CPU usage
-        const { stdout: cpuData } = await execAsync('wmic cpu get loadpercentage /value').catch(() => ({ stdout: 'LoadPercentage=0' }));
-        const cpuMatch = cpuData.match(/LoadPercentage=(\d+)/);
-        const cpuUsage = cpuMatch ? parseInt(cpuMatch[1]) : Math.floor(Math.random() * 40) + 10;
+  if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
-        // Get memory info
-        const totalMem = os.totalmem();
-        const freeMem = os.freemem();
-        const usedMem = totalMem - freeMem;
-
-        // Get disk info (fallback for non-Windows)
-        let diskStats = { used: 0, total: 500, percentage: 0 };
-        try {
-            const { stdout: diskData } = await execAsync('wmic logicaldisk where "DeviceID=\'C:\'" get size,freespace /value');
-            const sizeMatch = diskData.match(/Size=(\d+)/);
-            const freeMatch = diskData.match(/FreeSpace=(\d+)/);
-            
-            if (sizeMatch && freeMatch) {
-                const totalDisk = parseInt(sizeMatch[1]);
-                const freeDisk = parseInt(freeMatch[1]);
-                const usedDisk = totalDisk - freeDisk;
-                
-                diskStats = {
-                    used: Math.round(usedDisk / (1024 * 1024 * 1024) * 10) / 10,
-                    total: Math.round(totalDisk / (1024 * 1024 * 1024) * 10) / 10,
-                    percentage: Math.round((usedDisk / totalDisk) * 100)
-                };
-            }
-        } catch (error) {
-            // Fallback disk stats
-            diskStats = {
-                used: 350.4,
-                total: 500.0,
-                percentage: 70
-            };
-        }
-
-        return {
-            cpu: cpuUsage,
-            memory: {
-                used: Math.round(usedMem / (1024 * 1024 * 1024) * 10) / 10,
-                total: Math.round(totalMem / (1024 * 1024 * 1024) * 10) / 10,
-                percentage: Math.round((usedMem / totalMem) * 100)
-            },
-            disk: diskStats
-        };
-    } catch (error) {
-        console.error('Error getting system stats:', error);
-        return {
-            cpu: Math.floor(Math.random() * 40) + 10,
-            memory: { 
-                used: Math.round(Math.random() * 8 + 4), 
-                total: 16, 
-                percentage: Math.floor(Math.random() * 60) + 20 
-            },
-            disk: { 
-                used: 350.4, 
-                total: 500.0, 
-                percentage: 70 
-            }
-        };
-    }
-}
-
-// Get system uptime
-function getSystemUptime() {
-    const uptimeSeconds = os.uptime();
-    const days = Math.floor(uptimeSeconds / 86400);
-    const hours = Math.floor((uptimeSeconds % 86400) / 3600);
-    const minutes = Math.floor((uptimeSeconds % 3600) / 60);
-    
-    return `${days}d ${hours}h ${minutes}m`;
-}
-
-// App catalog
-const APP_CATALOG = {
-    'media-server': {
-        name: 'Media Server',
-        description: 'Stream your movies and TV shows',
-        icon: 'fas fa-play',
-        color: 'from-red-500 to-pink-500',
-        port: 8096,
-        category: 'media'
-    },
-    'file-manager': {
-        name: 'Cloud Storage',
-        description: 'Personal file storage and sync',
-        icon: 'fas fa-folder',
-        color: 'from-blue-500 to-cyan-500',
-        port: 8080,
-        category: 'storage'
-    },
-    'smart-home': {
-        name: 'Smart Home',
-        description: 'Control your smart devices',
-        icon: 'fas fa-home',
-        color: 'from-green-500 to-teal-500',
-        port: 8123,
-        category: 'automation'
-    }
-};
-
-// API Routes
-
-// Authentication endpoint
-app.post('/api/auth/login', async (req, res) => {
-    const { username, password } = req.body;
-    
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Username and password required' });
-    }
-    
-    const user = users[username];
-    if (!user || user.password !== password) {
-        return res.status(401).json({ success: false, error: 'Invalid credentials' });
-    }
-    
-    const token = generateToken();
-    const expiresAt = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
-    
-    sessions.set(token, {
-        user: { username: user.username },
-        expiresAt
-    });
-    
-    res.json({ 
-        success: true, 
-        token,
-        user: { username: user.username }
-    });
+  const token = Math.random().toString(36).slice(2);
+  sessions.set(token, { username, ts: Date.now() });
+  res.json({ token });
 });
 
-// Logout endpoint
-app.post('/api/auth/logout', requireAuth, (req, res) => {
-    const token = req.headers.authorization.split(' ')[1];
-    sessions.delete(token);
-    res.json({ success: true });
+app.post('/api/auth/logout', (req, res) => {
+  const token = (req.headers.authorization || '').split(' ')[1];
+  if (token) sessions.delete(token);
+  res.json({ ok: true });
 });
 
-// System status endpoint
-app.get('/api/status', requireAuth, async (req, res) => {
-    try {
-        const stats = await getRealSystemStats();
-        const uptime = getSystemUptime();
-        
-        res.json({
-            status: 'online',
-            version: '1.0.0',
-            port: PORT,
-            uptime,
-            stats,
-            apps: {
-                installed: 1,
-                running: 1
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get app catalog
-app.get('/api/apps/catalog', requireAuth, (req, res) => {
-    res.json(APP_CATALOG);
-});
-
-// Get installed apps
-app.get('/api/apps/installed', requireAuth, async (req, res) => {
-    try {
-        // Mock installed apps for now
-        const installedApps = [
-            {
-                id: 'file-manager',
-                name: 'Cloud Storage',
-                description: 'Personal file storage and sync',
-                icon: 'fas fa-folder',
-                color: 'from-blue-500 to-cyan-500',
-                status: 'running',
-                port: 8080
-            }
-        ];
-        
-        res.json(installedApps);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Install app endpoint
-app.post('/api/apps/install', requireAuth, async (req, res) => {
-    const { appId } = req.body;
-    
-    if (!APP_CATALOG[appId]) {
-        return res.status(404).json({ error: 'App not found' });
-    }
-    
+// ==== System status (cross-platform via systeminformation) ====
+app.get('/api/status', async (req, res) => {
+  try {
+    const [load, mem, fsSizes] = await Promise.all([
+      si.currentLoad(),
+      si.mem(),
+      si.fsSize()
+    ]);
+    const totalDisk = fsSizes.reduce((a, d) => a + (d.size || 0), 0);
+    const usedDisk = fsSizes.reduce((a, d) => a + (d.used || 0), 0);
     res.json({
-        success: true,
-        message: `Installing ${APP_CATALOG[appId].name}...`,
-        appId
+      cpu: { load: load.currentload },
+      memory: { total: mem.total, used: mem.total - mem.available, free: mem.available },
+      disk: { total: totalDisk, used: usedDisk }
     });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Failed to get system info' });
+  }
 });
 
-// Error handling
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Internal server error' });
+// ==== File upload ====
+const uploadDir = path.join(__dirname, '..', '..', '..', 'data', 'files');
+fs.mkdirSync(uploadDir, { recursive: true });
+const upload = multer({
+  dest: uploadDir,
+  limits: { fileSize: parseInt(process.env.MAX_UPLOAD_BYTES || '104857600', 10) }
+});
+app.post('/api/files/upload', upload.array('files'), (req, res) => {
+  res.json({ uploaded: (req.files || []).map(f => f.filename) });
 });
 
-// 404 handler
-app.use((req, res) => {
-    res.status(404).json({ error: 'Not found' });
+// ==== Apps (stubbed) ====
+app.get('/api/apps/catalog', (req, res) => {
+  res.json([
+    { id: 'media',     name: 'Media Server',  port: 8096 },
+    { id: 'storage',   name: 'Cloud Storage', port: 8080 },
+    { id: 'smarthome', name: 'Smart Home',    port: 8123 }
+  ]);
+});
+app.get('/api/apps/installed', (req, res) => {
+  res.json([]); // TODO: load from data/installed-apps.json
+});
+app.post('/api/apps/install', (req, res) => {
+  res.json({ message: 'Install stub (no-op)' });
 });
 
-// WebSocket server for real-time updates
-const WebSocket = require('ws');
-const wss = new WebSocket.Server({ port: 1469 });
+// ==== Static UI ====
+app.use(express.static(path.join(__dirname, '..', '..', '..', 'web')));
 
-wss.on('connection', (ws) => {
-    console.log('Client connected for real-time updates');
-    
-    const statsInterval = setInterval(async () => {
-        try {
-            const stats = await getRealSystemStats();
-            ws.send(JSON.stringify({ type: 'stats', data: stats }));
-        } catch (error) {
-            console.error('Error sending stats:', error);
-        }
-    }, 5000);
-    
-    ws.on('close', () => {
-        clearInterval(statsInterval);
-        console.log('Client disconnected');
-    });
-});
-// Add multer for file uploads
-const multer = require('multer');
-
-// Configure file upload
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadPath = req.body.uploadPath || path.join(__dirname, '../../data/files');
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.originalname);
-    }
-});
-
-const upload = multer({ storage: storage });
-
-// Get directory contents
-app.get('/api/files', requireAuth, async (req, res) => {
-    try {
-        const requestedPath = req.query.path || '';
-        const basePath = path.join(__dirname, '../../data/files');
-        const fullPath = path.resolve(basePath, requestedPath);
-        
-        if (!fullPath.startsWith(path.resolve(basePath))) {
-            return res.status(403).json({ error: 'Access denied' });
-        }
-
-        await fs.mkdir(basePath, { recursive: true });
-        const items = await fs.readdir(fullPath, { withFileTypes: true });
-        
-        const files = await Promise.all(items.map(async (item) => {
-            const itemPath = path.join(fullPath, item.name);
-            const stats = await fs.stat(itemPath);
-            
-            return {
-                name: item.name,
-                type: item.isDirectory() ? 'directory' : 'file',
-                size: item.isFile() ? stats.size : 0,
-                modified: stats.mtime.toISOString(),
-                path: path.join(requestedPath, item.name).replace(/\\/g, '/'),
-                extension: item.isFile() ? path.extname(item.name).toLowerCase() : null,
-                isImage: item.isFile() && ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].includes(path.extname(item.name).toLowerCase()),
-                isText: item.isFile() && ['.txt', '.json', '.js', '.html', '.css', '.md', '.log'].includes(path.extname(item.name).toLowerCase())
-            };
-        }));
-        
-        files.sort((a, b) => {
-            if (a.type !== b.type) {
-                return a.type === 'directory' ? -1 : 1;
-            }
-            return a.name.localeCompare(b.name);
-        });
-
-        res.json({
-            currentPath: requestedPath.replace(/\\/g, '/'),
-            items: files,
-            totalItems: files.length,
-            breadcrumbs: getBreadcrumbs(requestedPath)
-        });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to read directory' });
-    }
-});
-
-function getBreadcrumbs(currentPath) {
-    if (!currentPath) return [{ name: 'Home', path: '' }];
-    
-    const parts = currentPath.split('/').filter(part => part);
-    const breadcrumbs = [{ name: 'Home', path: '' }];
-    
-    let currentBreadcrumbPath = '';
-    parts.forEach(part => {
-        currentBreadcrumbPath += (currentBreadcrumbPath ? '/' : '') + part;
-        breadcrumbs.push({
-            name: part,
-            path: currentBreadcrumbPath
-        });
-    });
-    
-    return breadcrumbs;
-}
-
-// Upload files
-app.post('/api/files/upload', requireAuth, upload.array('files'), async (req, res) => {
-    try {
-        const uploadedFiles = req.files.map(file => ({
-            name: file.filename,
-            size: file.size,
-            path: path.join(req.body.path || '', file.filename).replace(/\\/g, '/')
-        }));
-        
-        res.json({
-            success: true,
-            message: `Uploaded ${uploadedFiles.length} file(s)`,
-            files: uploadedFiles
-        });
-    } catch (error) {
-        res.status(500).json({ error: 'Upload failed' });
-    }
-});
-// Start server
+// ==== HTTP server ====
 app.listen(PORT, () => {
-    console.log(`DadsCloud OS running on http://localhost:${PORT}`);
-    console.log(`WebSocket server running on ws://localhost:1469`);
-    console.log('='.repeat(50));
-    console.log('🚀 DadsCloud OS v1.0.0 - Ready!');
-    console.log('📱 Dashboard: http://localhost:1468');
-    console.log('👤 Default login: admin / admin123');
-    console.log('='.repeat(50));
+  console.log(`HTTP server running on http://localhost:${PORT}`);
 });
 
-module.exports = app;
+// ==== WebSocket server ====
+const wsServer = new WebSocket.Server({ port: WS_PORT });
+wsServer.on('connection', (ws) => {
+  const sendStats = async () => {
+    try {
+      const [load, mem, fsSizes] = await Promise.all([
+        si.currentLoad(),
+        si.mem(),
+        si.fsSize()
+      ]);
+      const totalDisk = fsSizes.reduce((a, d) => a + (d.size || 0), 0);
+      const usedDisk = fsSizes.reduce((a, d) => a + (d.used || 0), 0);
+      ws.send(JSON.stringify({
+        cpu: { load: load.currentload },
+        memory: { total: mem.total, used: mem.total - mem.available },
+        disk: { total: totalDisk, used: usedDisk }
+      }));
+    } catch (e) {
+      console.error('WS error', e);
+    }
+  };
+  const id = setInterval(sendStats, 3000);
+  ws.on('close', () => clearInterval(id));
+});
+
