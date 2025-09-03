@@ -8,14 +8,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
             min-height: 100vh;
         }
         
         .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(30, 30, 40, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
         
         .app-card {
@@ -25,11 +27,12 @@
         
         .app-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.2);
         }
         
         .glow {
-            box-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
         }
         
         @keyframes fadeIn {
@@ -41,182 +44,254 @@
             animation: fadeIn 0.6s ease-out;
         }
 
-        .notification {
-            z-index: 9999;
+        .login-container {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
         }
 
-        .modal {
-            z-index: 1000;
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(40, 40, 50, 0.8), rgba(50, 50, 60, 0.8));
         }
     </style>
 </head>
 <body class="text-white">
-    <!-- Header -->
-    <header class="glass-effect p-4 mb-8">
-        <div class="container mx-auto flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-cloud text-xl"></i>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="fixed inset-0 login-container flex items-center justify-center z-50">
+        <div class="glass-effect p-8 rounded-xl w-full max-w-md mx-4">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-cloud text-2xl"></i>
                 </div>
+                <h1 class="text-3xl font-bold">DadsCloud OS</h1>
+                <p class="text-white/60 mt-2">localhost:1468</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-6">
                 <div>
-                    <h1 class="text-2xl font-bold">DadsCloud OS</h1>
-                    <p class="text-sm opacity-75">localhost:1468</p>
+                    <label class="block text-sm font-medium mb-2">Username</label>
+                    <input type="text" id="username" class="w-full px-4 py-3 rounded-lg input-field" placeholder="Enter your username" required>
                 </div>
-            </div>
-            <div class="flex items-center space-x-4">
-                <div class="text-right">
-                    <p class="text-sm opacity-75">System Status</p>
-                    <p class="system-status text-green-400 font-semibold"><i class="fas fa-circle text-xs"></i> Online</p>
-                </div>
-                <button class="glass-effect px-4 py-2 rounded-lg hover:bg-white/20 transition-colors">
-                    <i class="fas fa-cog"></i>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <div class="container mx-auto px-4">
-        <!-- Dashboard Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 fade-in">
-            <!-- CPU Stats -->
-            <div class="glass-effect p-6 rounded-xl">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-75">CPU Usage</p>
-                        <p class="text-2xl font-bold cpu-percentage">23%</p>
-                    </div>
-                    <i class="fas fa-microchip text-3xl opacity-50"></i>
-                </div>
-                <div class="w-full bg-gray-700 rounded-full h-2 mt-3">
-                    <div class="bg-blue-500 h-2 rounded-full cpu-bar" style="width: 23%"></div>
-                </div>
-            </div>
-            
-            <!-- Memory Stats -->
-            <div class="glass-effect p-6 rounded-xl">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-75">Memory</p>
-                        <p class="text-2xl font-bold memory-used">4.2GB</p>
-                    </div>
-                    <i class="fas fa-memory text-3xl opacity-50"></i>
-                </div>
-                <div class="w-full bg-gray-700 rounded-full h-2 mt-3">
-                    <div class="bg-green-500 h-2 rounded-full memory-bar" style="width: 65%"></div>
-                </div>
-            </div>
-            
-            <!-- Storage Stats -->
-            <div class="glass-effect p-6 rounded-xl">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-75">Storage</p>
-                        <p class="text-2xl font-bold storage-used">156GB</p>
-                    </div>
-                    <i class="fas fa-hdd text-3xl opacity-50"></i>
-                </div>
-                <div class="w-full bg-gray-700 rounded-full h-2 mt-3">
-                    <div class="bg-yellow-500 h-2 rounded-full storage-bar" style="width: 45%"></div>
-                </div>
-            </div>
-            
-            <!-- Apps Running -->
-            <div class="glass-effect p-6 rounded-xl">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-75">Apps Running</p>
-                        <p class="text-2xl font-bold running-apps-count">7</p>
-                    </div>
-                    <i class="fas fa-cube text-3xl opacity-50"></i>
-                </div>
-                <div class="flex space-x-1 mt-3">
-                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="mb-8 fade-in">
-            <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
-            <div class="flex space-x-4 flex-wrap">
-                <button class="glass-effect px-6 py-3 rounded-lg hover:bg-white/20 transition-all glow install-app-btn mb-2">
-                    <i class="fas fa-plus mr-2"></i>Install App
-                </button>
-                <button class="glass-effect px-6 py-3 rounded-lg hover:bg-white/20 transition-all mb-2">
-                    <i class="fas fa-folder mr-2"></i>File Manager
-                </button>
-                <button class="glass-effect px-6 py-3 rounded-lg hover:bg-white/20 transition-all mb-2">
-                    <i class="fas fa-terminal mr-2"></i>System Logs
-                </button>
-                <button class="glass-effect px-6 py-3 rounded-lg hover:bg-white/20 transition-all mb-2">
-                    <i class="fas fa-download mr-2"></i>Backup
-                </button>
-            </div>
-        </div>
-
-        <!-- Installed Apps -->
-        <div class="fade-in">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-semibold">Installed Applications</h2>
-                <button class="glass-effect px-4 py-2 rounded-lg hover:bg-white/20 transition-colors text-sm">
-                    <i class="fas fa-th-large mr-2"></i>View All
-                </button>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 installed-apps-grid">
-                <!-- Apps will be dynamically populated here -->
                 
-                <!-- Add New App Card -->
-                <div class="app-card glass-effect p-6 rounded-xl border-2 border-dashed border-white/30 flex flex-col items-center justify-center text-center min-h-[200px] add-new-app-card">
-                    <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fas fa-plus text-xl"></i>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Password</label>
+                    <input type="password" id="password" class="w-full px-4 py-3 rounded-lg input-field" placeholder="Enter your password" required>
+                </div>
+                
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-3 rounded-lg font-semibold transition-all">
+                    Sign In
+                </button>
+            </form>
+            
+            <div id="loginError" class="mt-4 p-3 bg-red-900/50 border border-red-500/50 rounded-lg text-red-200 hidden">
+                Invalid credentials. Please try again.
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard (Hidden until logged in) -->
+    <div id="dashboard" class="hidden">
+        <!-- Header -->
+        <header class="glass-effect p-4 mb-8">
+            <div class="container mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-cloud text-xl"></i>
                     </div>
-                    <h3 class="font-semibold text-lg mb-2">Install New App</h3>
-                    <p class="text-sm opacity-75 mb-4">Browse the app store</p>
-                    <button class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-4 py-2 rounded-lg text-sm transition-all browse-apps-btn">
-                        Browse Apps
+                    <div>
+                        <h1 class="text-2xl font-bold">DadsCloud OS</h1>
+                        <p class="text-sm opacity-75">localhost:1468</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm opacity-75">System Status</p>
+                        <p class="system-status text-green-400 font-semibold"><i class="fas fa-circle text-xs"></i> Online</p>
+                    </div>
+                    <button onclick="logout()" class="glass-effect px-4 py-2 rounded-lg hover:bg-white/20 transition-colors">
+                        <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- Footer -->
-        <footer class="mt-16 mb-8 text-center">
-            <div class="glass-effect p-4 rounded-xl">
-                <p class="text-sm opacity-75">
-                    DadsCloud OS v1.0.0 • Open Source • Made with ❤️
-                </p>
-                <p class="text-xs opacity-50 mt-2 system-uptime">
-                    Running on localhost:1468 • System uptime: Loading...
-                </p>
+        <div class="container mx-auto px-4">
+            <!-- Dashboard Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 fade-in">
+                <!-- CPU Stats -->
+                <div class="glass-effect stat-card p-6 rounded-xl">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm opacity-75">CPU Usage</p>
+                            <p class="text-2xl font-bold cpu-percentage">0%</p>
+                        </div>
+                        <i class="fas fa-microchip text-3xl opacity-50"></i>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2 mt-3">
+                        <div class="bg-blue-500 h-2 rounded-full cpu-bar transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- Memory Stats -->
+                <div class="glass-effect stat-card p-6 rounded-xl">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm opacity-75">Memory</p>
+                            <p class="text-2xl font-bold memory-used">0GB</p>
+                        </div>
+                        <i class="fas fa-memory text-3xl opacity-50"></i>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2 mt-3">
+                        <div class="bg-green-500 h-2 rounded-full memory-bar transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- Storage Stats -->
+                <div class="glass-effect stat-card p-6 rounded-xl">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm opacity-75">Storage</p>
+                            <p class="text-2xl font-bold storage-used">0GB</p>
+                        </div>
+                        <i class="fas fa-hdd text-3xl opacity-50"></i>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2 mt-3">
+                        <div class="bg-yellow-500 h-2 rounded-full storage-bar transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- Apps Running -->
+                <div class="glass-effect stat-card p-6 rounded-xl">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm opacity-75">Apps Running</p>
+                            <p class="text-2xl font-bold running-apps-count">0</p>
+                        </div>
+                        <i class="fas fa-cube text-3xl opacity-50"></i>
+                    </div>
+                    <div class="flex space-x-1 mt-3">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <div class="w-2 h-2 bg-gray-500 rounded-full"></div>
+                    </div>
+                </div>
             </div>
-        </footer>
+
+            <!-- Quick Actions -->
+            <div class="mb-8 fade-in">
+                <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
+                <div class="flex space-x-4 flex-wrap">
+                    <button class="glass-effect px-6 py-3 rounded-lg hover:bg-white/20 transition-all glow install-app-btn mb-2">
+                        <i class="fas fa-plus mr-2"></i>Install App
+                    </button>
+                    <button class="glass-effect px-6 py-3 rounded-lg hover:bg-white/20 transition-all mb-2">
+                        <i class="fas fa-folder mr-2"></i>File Manager
+                    </button>
+                    <button class="glass-effect px-6 py-3 rounded-lg hover:bg-white/20 transition-all mb-2">
+                        <i class="fas fa-terminal mr-2"></i>System Logs
+                    </button>
+                    <button class="glass-effect px-6 py-3 rounded-lg hover:bg-white/20 transition-all mb-2">
+                        <i class="fas fa-download mr-2"></i>Backup
+                    </button>
+                </div>
+            </div>
+
+            <!-- Installed Apps -->
+            <div class="fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold">Installed Applications</h2>
+                    <button class="glass-effect px-4 py-2 rounded-lg hover:bg-white/20 transition-colors text-sm">
+                        <i class="fas fa-th-large mr-2"></i>View All
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 installed-apps-grid">
+                    <!-- Apps will be populated here -->
+                    
+                    <!-- Add New App Card -->
+                    <div class="app-card glass-effect p-6 rounded-xl border-2 border-dashed border-white/30 flex flex-col items-center justify-center text-center min-h-[200px] add-new-app-card">
+                        <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-plus text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Install New App</h3>
+                        <p class="text-sm opacity-75 mb-4">Browse the app store</p>
+                        <button class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-4 py-2 rounded-lg text-sm transition-all browse-apps-btn">
+                            Browse Apps
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="mt-16 mb-8 text-center">
+                <div class="glass-effect p-4 rounded-xl">
+                    <p class="text-sm opacity-75">
+                        DadsCloud OS v1.0.0 • Open Source • Made with ❤️
+                    </p>
+                    <p class="text-xs opacity-50 mt-2 system-uptime">
+                        Running on localhost:1468 • System uptime: Loading...
+                    </p>
+                </div>
+            </footer>
+        </div>
     </div>
 
     <script>
-        // DadsCloud API Class
+        // Authentication state
+        let isAuthenticated = false;
+        let authToken = null;
+
+        // DadsCloud API Class with Authentication
         class DadsCloudAPI {
             constructor(baseUrl = '') {
                 this.baseUrl = baseUrl;
             }
 
             async fetch(endpoint, options = {}) {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+
                 const response = await fetch(`${this.baseUrl}/api${endpoint}`, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...options.headers
-                    },
+                    headers,
                     ...options
                 });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
                 
                 if (!response.ok) {
                     throw new Error(`API Error: ${response.statusText}`);
                 }
                 
                 return await response.json();
+            }
+
+            async login(username, password) {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                return response.json();
             }
 
             async getSystemStatus() {
@@ -230,26 +305,6 @@
             async getInstalledApps() {
                 return await this.fetch('/apps/installed');
             }
-
-            async installApp(appId) {
-                return await this.fetch('/apps/install', {
-                    method: 'POST',
-                    body: JSON.stringify({ appId })
-                });
-            }
-
-            async uninstallApp(appId) {
-                return await this.fetch(`/apps/${appId}`, {
-                    method: 'DELETE'
-                });
-            }
-
-            async controlApp(appId, action) {
-                return await this.fetch(`/apps/${appId}/control`, {
-                    method: 'POST',
-                    body: JSON.stringify({ action })
-                });
-            }
         }
 
         // DadsCloud UI Class
@@ -257,7 +312,45 @@
             constructor() {
                 this.api = new DadsCloudAPI();
                 this.ws = null;
-                this.init();
+                this.setupAuthListeners();
+            }
+
+            setupAuthListeners() {
+                document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const username = document.getElementById('username').value;
+                    const password = document.getElementById('password').value;
+                    await this.login(username, password);
+                });
+            }
+
+            async login(username, password) {
+                try {
+                    const result = await this.api.login(username, password);
+                    
+                    if (result.success) {
+                        authToken = result.token;
+                        isAuthenticated = true;
+                        this.showDashboard();
+                        this.init();
+                    } else {
+                        this.showLoginError();
+                    }
+                } catch (error) {
+                    this.showLoginError();
+                }
+            }
+
+            showLoginError() {
+                document.getElementById('loginError').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('loginError').classList.add('hidden');
+                }, 3000);
+            }
+
+            showDashboard() {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
             }
 
             async init() {
@@ -280,7 +373,6 @@
                     this.updateSystemInfo(status);
                 } catch (error) {
                     console.error('Error loading system stats:', error);
-                    this.showError('Failed to load system statistics');
                 }
             }
 
@@ -316,17 +408,9 @@
                     runningAppsCount.textContent = status.apps.running;
                 }
 
-                const systemStatus = document.querySelector('.system-status');
-                if (systemStatus) {
-                    systemStatus.innerHTML = '<i class="fas fa-circle text-xs"></i> Online';
-                    systemStatus.className = 'text-green-400 font-semibold system-status';
-                }
-
                 const uptime = document.querySelector('.system-uptime');
                 if (uptime && status.uptime) {
-                    const uptimeHours = Math.floor(status.uptime / 3600);
-                    const uptimeMinutes = Math.floor((status.uptime % 3600) / 60);
-                    uptime.textContent = `Running on localhost:1468 • System uptime: ${uptimeHours}h ${uptimeMinutes}m`;
+                    uptime.textContent = `Running on localhost:1468 • System uptime: ${status.uptime}`;
                 }
             }
 
@@ -383,6 +467,14 @@
                 return card;
             }
 
+            setupEventListeners() {
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('.install-app-btn') || e.target.closest('.browse-apps-btn')) {
+                        this.showAppStore();
+                    }
+                });
+            }
+
             async showAppStore() {
                 try {
                     const catalog = await this.api.getAppCatalog();
@@ -395,7 +487,7 @@
 
             renderAppStore(catalog) {
                 const modal = document.createElement('div');
-                modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center modal';
+                modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50';
                 modal.innerHTML = `
                     <div class="glass-effect p-8 rounded-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
                         <div class="flex items-center justify-between mb-6">
@@ -406,7 +498,7 @@
                             </button>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            ${Object.entries(catalog).map(([id, app]) => `
+                            ${Object.entries(catalog || {}).map(([id, app]) => `
                                 <div class="glass-effect p-6 rounded-xl">
                                     <div class="w-12 h-12 bg-gradient-to-r ${app.color} rounded-lg flex items-center justify-center mb-4">
                                         <i class="${app.icon} text-xl"></i>
@@ -425,175 +517,47 @@
                 document.body.appendChild(modal);
             }
 
-            async installApp(appId) {
-                try {
-                    const result = await this.api.installApp(appId);
-                    this.showSuccess(`Installing ${appId}...`);
-                    
-                    // Close any open modals
-                    document.querySelectorAll('.modal').forEach(modal => modal.remove());
-                    
-                    // Refresh apps after installation
-                    setTimeout(() => {
-                        this.loadInstalledApps();
-                    }, 3000);
-                } catch (error) {
-                    console.error('Error installing app:', error);
-                    this.showError('Failed to install app');
-                }
-            }
-
-            async openApp(appId) {
-                try {
-                    const installedApps = await this.api.getInstalledApps();
-                    const app = installedApps.find(a => a.id === appId);
-                    
-                    if (app && app.url) {
-                        window.open(app.url, '_blank');
-                    } else {
-                        this.showError('App URL not available');
-                    }
-                } catch (error) {
-                    this.showError('Failed to open app');
-                }
-            }
-
-            showAppMenu(appId) {
-                const menu = document.createElement('div');
-                menu.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center modal';
-                menu.innerHTML = `
-                    <div class="glass-effect p-6 rounded-xl">
-                        <h3 class="text-lg font-semibold mb-4">App Controls</h3>
-                        <div class="space-y-2">
-                            <button onclick="dadsCloud.controlApp('${appId}', 'start')" 
-                                    class="block w-full text-left px-4 py-2 rounded hover:bg-white/20">
-                                <i class="fas fa-play mr-2"></i>Start
-                            </button>
-                            <button onclick="dadsCloud.controlApp('${appId}', 'stop')" 
-                                    class="block w-full text-left px-4 py-2 rounded hover:bg-white/20">
-                                <i class="fas fa-stop mr-2"></i>Stop
-                            </button>
-                            <button onclick="dadsCloud.uninstallApp('${appId}')" 
-                                    class="block w-full text-left px-4 py-2 rounded hover:bg-red-600/50 text-red-400">
-                                <i class="fas fa-trash mr-2"></i>Uninstall
-                            </button>
-                            <button onclick="this.closest('.fixed').remove()" 
-                                    class="block w-full text-left px-4 py-2 rounded hover:bg-white/20 mt-4 border-t border-white/20 pt-4">
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(menu);
-            }
-
-            async controlApp(appId, action) {
-                try {
-                    await this.api.controlApp(appId, action);
-                    this.showSuccess(`App ${action} successful`);
-                    this.loadInstalledApps();
-                } catch (error) {
-                    console.error('Error controlling app:', error);
-                    this.showError(`Failed to ${action} app`);
-                }
-                
-                // Close any open menus
-                document.querySelectorAll('.modal').forEach(modal => modal.remove());
-            }
-
-            async uninstallApp(appId) {
-                if (confirm('Are you sure you want to uninstall this app?')) {
-                    try {
-                        await this.api.uninstallApp(appId);
-                        this.showSuccess('App uninstalled successfully');
-                        this.loadInstalledApps();
-                    } catch (error) {
-                        console.error('Error uninstalling app:', error);
-                        this.showError('Failed to uninstall app');
-                    }
-                }
-                
-                // Close any open menus
-                document.querySelectorAll('.modal').forEach(modal => modal.remove());
-            }
-
-            setupEventListeners() {
-                document.addEventListener('click', (e) => {
-                    if (e.target.closest('.install-app-btn') || e.target.closest('.browse-apps-btn')) {
-                        this.showAppStore();
-                    }
-                });
+            showError(message) {
+                console.error(message);
             }
 
             setupWebSocket() {
+                // WebSocket setup for real-time updates
                 try {
                     this.ws = new WebSocket('ws://localhost:1469');
-                    
                     this.ws.onmessage = (event) => {
                         const data = JSON.parse(event.data);
                         if (data.type === 'stats') {
                             this.updateStatsDisplay(data.data);
                         }
                     };
-                    
-                    this.ws.onclose = () => {
-                        console.log('WebSocket disconnected, attempting to reconnect...');
-                        setTimeout(() => this.setupWebSocket(), 5000);
-                    };
                 } catch (error) {
-                    console.log('WebSocket not available, using polling instead');
+                    console.log('WebSocket not available');
                 }
             }
+        }
 
-            showSuccess(message) {
-                this.showNotification(message, 'success');
-            }
-
-            showError(message) {
-                this.showNotification(message, 'error');
-            }
-
-            showNotification(message, type) {
-                const notification = document.createElement('div');
-                notification.className = `fixed top-4 right-4 p-4 rounded-lg glass-effect notification ${
-                    type === 'error' ? 'border-red-500' : 'border-green-500'
-                } border`;
-                notification.innerHTML = `
-                    <div class="flex items-center">
-                        <i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'} mr-2"></i>
-                        ${message}
-                    </div>
-                `;
-                
-                document.body.appendChild(notification);
-                
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.remove();
-                    }
-                }, 3000);
-            }
+        // Logout function
+        function logout() {
+            isAuthenticated = false;
+            authToken = null;
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
         }
 
         // Initialize DadsCloud UI when page loads
         let dadsCloud;
         document.addEventListener('DOMContentLoaded', function() {
             dadsCloud = new DadsCloudUI();
-            
-            // Add animation delays for fade-in elements
-            const stats = document.querySelectorAll('.fade-in');
-            stats.forEach((stat, index) => {
-                stat.style.animationDelay = (index * 0.1) + 's';
-            });
         });
 
-        // Global functions for inline onclick handlers
+        // Global functions for inline handlers
         window.dadsCloud = {
-            installApp: (appId) => dadsCloud.installApp(appId),
-            openApp: (appId) => dadsCloud.openApp(appId),
-            showAppMenu: (appId) => dadsCloud.showAppMenu(appId),
-            controlApp: (appId, action) => dadsCloud.controlApp(appId, action),
-            uninstallApp: (appId) => dadsCloud.uninstallApp(appId)
+            openApp: (appId) => console.log('Opening app:', appId),
+            showAppMenu: (appId) => console.log('Showing menu for:', appId),
+            installApp: (appId) => console.log('Installing:', appId)
         };
     </script>
 </body>
