@@ -524,7 +524,7 @@
             setupWebSocket() {
                 // WebSocket setup for real-time updates
                 try {
-                    this.ws = new WebSocket('ws://localhost:1469');
+                    this.ws = new WebSocket(`ws://${location.hostname}:1469`);
                     this.ws.onmessage = (event) => {
                         const data = JSON.parse(event.data);
                         if (data.type === 'stats') {
