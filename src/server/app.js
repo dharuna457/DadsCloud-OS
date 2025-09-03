@@ -297,7 +297,106 @@ wss.on('connection', (ws) => {
         console.log('Client disconnected');
     });
 });
+// Add multer for file uploads
+const multer = require('multer');
 
+// Configure file upload
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadPath = req.body.uploadPath || path.join(__dirname, '../../data/files');
+        cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
+    }
+});
+
+const upload = multer({ storage: storage });
+
+// Get directory contents
+app.get('/api/files', requireAuth, async (req, res) => {
+    try {
+        const requestedPath = req.query.path || '';
+        const basePath = path.join(__dirname, '../../data/files');
+        const fullPath = path.resolve(basePath, requestedPath);
+        
+        if (!fullPath.startsWith(path.resolve(basePath))) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        await fs.mkdir(basePath, { recursive: true });
+        const items = await fs.readdir(fullPath, { withFileTypes: true });
+        
+        const files = await Promise.all(items.map(async (item) => {
+            const itemPath = path.join(fullPath, item.name);
+            const stats = await fs.stat(itemPath);
+            
+            return {
+                name: item.name,
+                type: item.isDirectory() ? 'directory' : 'file',
+                size: item.isFile() ? stats.size : 0,
+                modified: stats.mtime.toISOString(),
+                path: path.join(requestedPath, item.name).replace(/\\/g, '/'),
+                extension: item.isFile() ? path.extname(item.name).toLowerCase() : null,
+                isImage: item.isFile() && ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].includes(path.extname(item.name).toLowerCase()),
+                isText: item.isFile() && ['.txt', '.json', '.js', '.html', '.css', '.md', '.log'].includes(path.extname(item.name).toLowerCase())
+            };
+        }));
+        
+        files.sort((a, b) => {
+            if (a.type !== b.type) {
+                return a.type === 'directory' ? -1 : 1;
+            }
+            return a.name.localeCompare(b.name);
+        });
+
+        res.json({
+            currentPath: requestedPath.replace(/\\/g, '/'),
+            items: files,
+            totalItems: files.length,
+            breadcrumbs: getBreadcrumbs(requestedPath)
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to read directory' });
+    }
+});
+
+function getBreadcrumbs(currentPath) {
+    if (!currentPath) return [{ name: 'Home', path: '' }];
+    
+    const parts = currentPath.split('/').filter(part => part);
+    const breadcrumbs = [{ name: 'Home', path: '' }];
+    
+    let currentBreadcrumbPath = '';
+    parts.forEach(part => {
+        currentBreadcrumbPath += (currentBreadcrumbPath ? '/' : '') + part;
+        breadcrumbs.push({
+            name: part,
+            path: currentBreadcrumbPath
+        });
+    });
+    
+    return breadcrumbs;
+}
+
+// Upload files
+app.post('/api/files/upload', requireAuth, upload.array('files'), async (req, res) => {
+    try {
+        const uploadedFiles = req.files.map(file => ({
+            name: file.filename,
+            size: file.size,
+            path: path.join(req.body.path || '', file.filename).replace(/\\/g, '/')
+        }));
+        
+        res.json({
+            success: true,
+            message: `Uploaded ${uploadedFiles.length} file(s)`,
+            files: uploadedFiles
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Upload failed' });
+    }
+});
 // Start server
 app.listen(PORT, () => {
     console.log(`DadsCloud OS running on http://localhost:${PORT}`);
